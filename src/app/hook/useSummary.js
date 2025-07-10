@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Gunakan URL relatif. Browser akan otomatis menggunakan domain yang sama.
+const API_BASE_URL = '/api';
 
 const useSummary = () => {
   const [summaryData, setSummaryData] = useState({

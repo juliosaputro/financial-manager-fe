@@ -1,33 +1,22 @@
-const fs = require('fs');
-const path = require('path');
+/**
+ * PENTING: Untuk Vercel Serverless Functions, filesystem bersifat read-only.
+ * Data tidak dapat ditulis ke file JSON. Perubahan ini mengadaptasi data store
+ * untuk bekerja secara in-memory.
+ *
+ * Data akan di-reset pada setiap pemanggilan fungsi serverless.
+ * Ini HANYA cocok untuk demonstrasi. Untuk produksi, gunakan database.
+ */
 
-const transactionsPath = path.join(__dirname, 'transactions.json');
-const categoriesPath = path.join(__dirname, 'categories.json');
+// Muat data awal dari file JSON. `require` akan bekerja di Vercel untuk membaca file yang di-deploy.
+let TRANSACTIONS_DATA = require('./transactions.json');
+let CATEGORIES_DATA = require('./categories.json');
 
-// Helper untuk membaca data dari file JSON
-const readData = (filePath) => {
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (error.code === 'ENOENT') return []; // Jika file tidak ada, kembalikan array kosong
-    console.error(`Gagal membaca file dari disk: ${filePath}`, error);
-    return [];
-  }
+// Helper untuk menulis data (sekarang menjadi no-op/tidak melakukan apa-apa)
+const writeData = () => {
+  // Di lingkungan serverless, kita tidak bisa menulis ke file.
+  // Fungsi ini dibiarkan kosong untuk menghindari error.
+  // Perubahan hanya akan ada di memori selama eksekusi fungsi.
 };
-
-// Helper untuk menulis data ke file JSON
-const writeData = (filePath, data) => {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (error) {
-    console.error(`Gagal menulis file ke disk: ${filePath}`, error);
-  }
-};
-
-// Inisialisasi data dari file
-let TRANSACTIONS_DATA = readData(transactionsPath);
-let CATEGORIES_DATA = readData(categoriesPath);
 
 const dataStore = {
   getTransactions: () => TRANSACTIONS_DATA,
@@ -36,8 +25,8 @@ const dataStore = {
   addTransaction: (transaction) => {
     const newId = TRANSACTIONS_DATA.length > 0 ? Math.max(...TRANSACTIONS_DATA.map(t => t.id)) + 1 : 1;
     const newTransaction = { ...transaction, id: newId };
-    TRANSACTIONS_DATA.push(newTransaction);
-    writeData(transactionsPath, TRANSACTIONS_DATA);
+    TRANSACTIONS_DATA.unshift(newTransaction); // Gunakan unshift agar data baru di atas
+    writeData(); // Perubahan hanya di memori
     return newTransaction;
   },
 
@@ -45,7 +34,7 @@ const dataStore = {
     const index = TRANSACTIONS_DATA.findIndex(t => t.id === id);
     if (index !== -1) {
       TRANSACTIONS_DATA[index] = { ...TRANSACTIONS_DATA[index], ...updatedData };
-      writeData(transactionsPath, TRANSACTIONS_DATA);
+      writeData(); // Perubahan hanya di memori
       return TRANSACTIONS_DATA[index];
     }
     return null;
@@ -55,7 +44,7 @@ const dataStore = {
     const initialLength = TRANSACTIONS_DATA.length;
     TRANSACTIONS_DATA = TRANSACTIONS_DATA.filter(t => t.id !== id);
     if (TRANSACTIONS_DATA.length < initialLength) {
-      writeData(transactionsPath, TRANSACTIONS_DATA);
+      writeData(); // Perubahan hanya di memori
       return true;
     }
     return false;
@@ -65,7 +54,7 @@ const dataStore = {
     const newId = CATEGORIES_DATA.length > 0 ? Math.max(...CATEGORIES_DATA.map(c => c.id)) + 1 : 1;
     const newCategory = { ...category, id: newId };
     CATEGORIES_DATA.push(newCategory);
-    writeData(categoriesPath, CATEGORIES_DATA);
+    writeData(); // Perubahan hanya di memori
     return newCategory;
   },
 
@@ -73,7 +62,7 @@ const dataStore = {
     const index = CATEGORIES_DATA.findIndex(c => c.id === id);
     if (index !== -1) {
       CATEGORIES_DATA[index] = { ...CATEGORIES_DATA[index], ...updatedData };
-      writeData(categoriesPath, CATEGORIES_DATA);
+      writeData(); // Perubahan hanya di memori
       return CATEGORIES_DATA[index];
     }
     return null;
@@ -83,7 +72,7 @@ const dataStore = {
     const initialLength = CATEGORIES_DATA.length;
     CATEGORIES_DATA = CATEGORIES_DATA.filter(c => c.id !== id);
     if (CATEGORIES_DATA.length < initialLength) {
-      writeData(categoriesPath, CATEGORIES_DATA);
+      writeData(); // Perubahan hanya di memori
       return true;
     }
     return false;
