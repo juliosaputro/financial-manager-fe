@@ -2,9 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-const transactionsRouter = require(path.resolve(process.cwd(), './routes/transactions.js'));
-const categoriesRouter = require(path.resolve(process.cwd(), './routes/categories.js'));
-const summaryRouter = require(path.resolve(process.cwd(), './routes/summary.js'));
+// Gunakan path relatif dari file ini. Ini adalah cara yang paling andal.
+const transactionsRouter = require('./routes/transactions.js');
+const categoriesRouter = require('./routes/categories.js');
+const summaryRouter = require('./routes/summary.js');
 
 const app = express();
 
