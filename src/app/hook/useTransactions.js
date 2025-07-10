@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import dayjs from 'dayjs';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 /**
  * Hook fleksibel untuk mengelola data transaksi.
