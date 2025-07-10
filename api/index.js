@@ -12,9 +12,9 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 
-// Path ini relatif terhadap /api yang sudah ditangani Vercel
-app.use('/transactions', transactionsRouter);
-app.use('/categories', categoriesRouter);
-app.use('/summary', summaryRouter);
+// Konfigurasikan Express untuk menangani path lengkap yang diterima dari Vercel
+app.use('/api/transactions', transactionsRouter);
+app.use('/api/categories', categoriesRouter);
+app.use('/api/summary', summaryRouter);
 
 module.exports = app;
