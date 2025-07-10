@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-const transactionsRouter = require('../backend/routes/transactions');
-const categoriesRouter = require('../backend/routes/categories');
-const summaryRouter = require('../backend/routes/summary');
+const path = require('path');
+
+const transactionsRouter = require(path.resolve(process.cwd(), 'backend/routes/transactions.js'));
+const categoriesRouter = require(path.resolve(process.cwd(), 'backend/routes/categories.js'));
+const summaryRouter = require(path.resolve(process.cwd(), 'backend/routes/summary.js'));
 
 const app = express();
 
