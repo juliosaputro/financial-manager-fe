@@ -4,7 +4,10 @@ import { useState, useCallback, useEffect } from 'react';
 import dayjs from 'dayjs';
 
 // Gunakan URL relatif. Browser akan otomatis menggunakan domain yang sama.
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+console.log('API_BASE_URL:', process.env);
+
 
 /**
  * Hook fleksibel untuk mengelola data transaksi.

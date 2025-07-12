@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 
 // Gunakan URL relatif. Browser akan otomatis menggunakan domain yang sama.
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const useSummary = () => {
   const [summaryData, setSummaryData] = useState({
