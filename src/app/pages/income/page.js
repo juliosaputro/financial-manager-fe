@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   MaterialReactTable,
   useMaterialReactTable,
-} from "material-react-table";
+} from 'material-react-table';
 import {
   Autocomplete,
   Box,
@@ -13,17 +13,26 @@ import {
   Stack,
   TextField,
   Tooltip,
-} from "@mui/material";
+} from '@mui/material';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Edit, Delete } from "@mui/icons-material";
-
-import IncomeAreaChart from "@/app/components/income/IncomeAreaChart";
-import { formattedToIDR } from "@/app/constants/formattedtoIDR";
-import { SharedCreateTransactionModal } from "@/app/components/shared-components/SharedCreateTransactionModal";
-import useCategories from "@/app/hook/useCategories";
-import useTransactions from "@/app/hook/useTransactions";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend, Filler } from 'chart.js';
+import { Edit, Delete } from '@mui/icons-material';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { formattedToIDR } from '@/app/constants/formattedtoIDR';
+import { SharedCreateTransactionModal } from '@/app/components/shared-components/SharedCreateTransactionModal';
+import IncomeAreaChart from '@/app/components/income/IncomeAreaChart'; // <-- Gunakan chart untuk income
+import useCategories from '@/app/hook/useCategories';
+import useTransactions from '@/app/hook/useTransactions';
 
 // Register Chart.js
 ChartJS.register(
@@ -38,32 +47,31 @@ ChartJS.register(
 );
 
 export default function IncomePage() {
-  // Gunakan hook fleksibel dengan tipe 'Income'
+  // Gunakan hook dengan tipe 'Income'
   const {
-    transactions: income, // Ganti nama variabel agar lebih jelas
+    transactions: incomes, // Ganti nama variabel
     pagination,
     setPagination,
     loading,
     error,
-    fetchTransactions: fetchIncome,
+    fetchTransactions: fetchIncomes, // Ganti nama fungsi
     addTransaction: addIncome,
     updateTransaction: updateIncome,
     deleteTransaction: deleteIncome,
-  } = useTransactions("Income");
+  } = useTransactions('Income'); // <-- KUNCI: Ubah tipe menjadi 'Income'
 
   const { categories } = useCategories();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  // State lokal untuk filter agar bisa dikontrol
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  // State lokal untuk filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [startDate, setStartDate] = useState(dayjs().startOf('month'));
   const [endDate, setEndDate] = useState(dayjs().endOf('month'));
   const debounceTimeout = useRef(null);
 
-  // Ambil data saat paginasi atau filter kategori berubah
+  // Ambil data saat paginasi atau filter berubah
   useEffect(() => {
-    // Jangan fetch jika searchTerm masih dalam proses debounce
     if (debounceTimeout.current) return;
     const filters = {
       search: searchTerm,
@@ -71,18 +79,21 @@ export default function IncomePage() {
       startDate: startDate ? startDate.format('YYYY-MM-DD') : null,
       endDate: endDate ? endDate.format('YYYY-MM-DD') : null,
     };
-    fetchIncome(filters, pagination);
+    fetchIncomes(
+      filters,
+      pagination
+    );
   }, [pagination.currentPage, pagination.limit, categoryFilter, startDate, endDate]);
 
-  // Debounce untuk input pencarian
+  // Debounce untuk pencarian
   const handleSearchChange = (event) => {
     const newSearchTerm = event.target.value;
     setSearchTerm(newSearchTerm);
 
     clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
-      debounceTimeout.current = null; // Hapus timeout setelah selesai
-      fetchIncome(
+      debounceTimeout.current = null;
+      fetchIncomes(
         {
           search: newSearchTerm, category: categoryFilter,
           startDate: startDate ? startDate.format('YYYY-MM-DD') : null,
@@ -90,7 +101,7 @@ export default function IncomePage() {
         },
         { ...pagination, currentPage: 1 }
       );
-    }, 500); // Tunda 500ms
+    }, 500);
   };
 
   const handleResetFilters = () => {
@@ -101,31 +112,28 @@ export default function IncomePage() {
   };
 
   // Kolom untuk table
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: "date",
-        header: "Tanggal",
-        Cell: ({ cell }) => dayjs(cell.getValue()).format('YYYY-MM-DD'),
-      },
-      {
-        accessorKey: "description",
-        header: "Deskripsi",
-      },
-      {
-        accessorKey: "category",
-        header: "Kategori",
-      },
-      {
-        accessorKey: "amount",
-        header: "Jumlah",
-        Cell: ({ cell }) => formattedToIDR(cell.getValue()),
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => [
+    {
+      accessorKey: 'date',
+      header: 'Tanggal',
+      Cell: ({ cell }) => dayjs(cell.getValue()).format('YYYY-MM-DD'),
+    },
+    {
+      accessorKey: 'description',
+      header: 'Deskripsi',
+    },
+    {
+      accessorKey: 'category',
+      header: 'Kategori',
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Jumlah',
+      Cell: ({ cell }) => formattedToIDR(cell.getValue()),
+    },
+  ], []);
 
-  const handleCreateNewRow = async (values) => {
+  const handleCreateNewRow = (values) => {
     addIncome(values);
   };
 
@@ -134,43 +142,36 @@ export default function IncomePage() {
     exitEditingMode();
   };
 
-  const handleDeleteRow = async (row) => {
-    if (
-      !confirm(`Yakin ingin menghapus pemasukan: ${row.original.description}?`)
-    )
-      return;
+  const handleDeleteRow = (row) => {
+    if (!confirm(`Yakin ingin menghapus pemasukan: ${row.original.description}?`)) return;
     deleteIncome(row.original.id);
   };
 
   const table = useMaterialReactTable({
     columns,
-    data: income,
-    manualPagination: true, // <-- PENTING: Aktifkan paginasi manual
-    rowCount: pagination.totalItems, // <-- Beri tahu tabel total baris data di server
-    editDisplayMode: "modal",
+    data: incomes,
+    manualPagination: true,
+    rowCount: pagination.totalItems,
+    editDisplayMode: 'modal',
     enableEditing: true,
     onEditingRowSave: handleSaveRowEdits,
-    onPaginationChange: setPagination, // <-- Sambungkan event tabel ke state hook
+    onPaginationChange: setPagination,
     state: {
       isLoading: loading,
       pagination: {
-        // <-- Sinkronkan UI tabel dengan state dari hook
-        pageIndex: pagination.currentPage - 1, // Konversi dari 1-based ke 0-based
+        pageIndex: pagination.currentPage - 1,
         pageSize: pagination.limit,
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <Edit />
           </IconButton>
         </Tooltip>
         <Tooltip title="Hapus">
-          <IconButton
-            color="error"
-            onClick={() => handleDeleteRow(row.original)}
-          >
+          <IconButton color="error" onClick={() => handleDeleteRow(row)}>
             <Delete />
           </IconButton>
         </Tooltip>
@@ -208,10 +209,10 @@ export default function IncomePage() {
             onChange={handleSearchChange}
           />
           <Autocomplete
-            options={categories.map((cat) => cat.name) || []}
+            options={categories.map((cat) => cat.name)}
             value={categoryFilter || null}
             onChange={(_, newValue) => {
-              setCategoryFilter(newValue || "");
+              setCategoryFilter(newValue || '');
             }}
             renderInput={(params) => (
               <TextField
@@ -228,12 +229,8 @@ export default function IncomePage() {
           </Button>
         </Stack>
       </Stack>
-    ),
+    )
   });
-
-  if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
-  }
 
   return (
     <>
@@ -241,7 +238,7 @@ export default function IncomePage() {
 
       {/* Chart */}
       <div className="mb-8 p-4 bg-white rounded-lg shadow-md">
-        <IncomeAreaChart data={income} startDate={startDate} endDate={endDate} />
+        <IncomeAreaChart data={incomes} startDate={startDate} endDate={endDate} />
       </div>
 
       {/* Tabel */}
